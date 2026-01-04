@@ -31,8 +31,9 @@ const Auth = () => {
       const response = await api.get('/team/organizations');
       setOrganizations(response.data.data || []);
     } catch (error) {
-      // If it fails, user can still create a new org
+      // If it fails, user can still create a new org - just set empty array
       console.error('Failed to load organizations:', error);
+      setOrganizations([]);
     }
   };
 
