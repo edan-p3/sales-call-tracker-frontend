@@ -16,6 +16,7 @@ function MainApp() {
   const [notification, setNotification] = useState(null);
   const [logo, setLogo] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
 
   // Team management (for managers)
   const [teamMembers, setTeamMembers] = useState([]);
@@ -113,6 +114,7 @@ function MainApp() {
   const handleSaveData = useCallback(async () => {
     if (weekData) {
       const weekStartStr = format(startOfWeek(currentWeek, { weekStartsOn: 1 }), 'yyyy-MM-dd');
+      setSaving(true);
       try {
         let success;
         
@@ -130,20 +132,22 @@ function MainApp() {
       } catch (error) {
         console.error('Error saving data:', error);
         showNotification('Failed to save data.', 'error');
+      } finally {
+        setSaving(false);
       }
     }
   }, [weekData, currentWeek, viewingMode, selectedMember]);
 
-  // Auto-save effect
+  // Auto-save effect with better debouncing
   useEffect(() => {
     const timeoutId = setTimeout(() => {
-      if (weekData) {
+      if (weekData && !loading) {
         handleSaveData();
       }
-    }, 500); // Debounce auto-save by 500ms
+    }, 1000); // Debounce auto-save by 1 second
 
     return () => clearTimeout(timeoutId);
-  }, [weekData, handleSaveData]);
+  }, [weekData, handleSaveData, loading]);
 
   const handleManualSave = async () => {
     await handleSaveData();
@@ -239,37 +243,58 @@ function MainApp() {
 
       {/* Main Content */}
       <main className="max-w-7xl mx-auto p-4 md:p-6 space-y-6">
-        {/* Controls: Week Selector & Team Member Selector (for managers) */}
+        {/* Controls: Week Selector, Team Member Selector, Auto-save Indicator */}
         <div className="flex flex-col md:flex-row justify-between items-center gap-4 bg-white p-4 rounded-xl shadow-sm border border-slate-100">
           <div className="w-full md:w-auto">
             <WeekSelector currentWeek={currentWeek} onChange={setCurrentWeek} />
           </div>
 
-          {/* Team Member Selector (only for managers) */}
-          {isManager && (
-            <div className="w-full md:w-auto">
-              <label className="block text-xs text-slate-500 mb-1 font-medium">View Data For:</label>
-              <select 
-                value={viewingMode === 'self' ? 'self' : selectedMember}
-                onChange={(e) => handleMemberChange(e.target.value)}
-                className="w-full md:w-64 p-2.5 rounded-lg border border-slate-300 bg-white text-slate-700 focus:ring-2 focus:ring-midnight focus:border-transparent outline-none"
-              >
-                <option value="self">My Data</option>
-                {teamMembers.length > 0 && (
-                  <optgroup label="Team Members">
-                    {teamMembers.map(member => (
-                      <option key={member.id} value={member.id}>
-                        {member.firstName} {member.lastName} ({member.role})
-                      </option>
-                    ))}
-                  </optgroup>
-                )}
-                {teamMembers.length === 0 && (
-                  <option disabled>No team members yet</option>
-                )}
-              </select>
-            </div>
-          )}
+          <div className="flex items-center gap-4">
+            {/* Auto-save indicator */}
+            {saving && (
+              <div className="flex items-center gap-2 text-sm text-slate-500">
+                <svg className="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                Saving...
+              </div>
+            )}
+            {!saving && weekData && (
+              <div className="flex items-center gap-2 text-sm text-emerald-600">
+                <svg className="h-4 w-4" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                </svg>
+                Saved
+              </div>
+            )}
+
+            {/* Team Member Selector (only for managers) */}
+            {isManager && (
+              <div className="w-full md:w-auto">
+                <label className="block text-xs text-slate-500 mb-1 font-medium">View Data For:</label>
+                <select 
+                  value={viewingMode === 'self' ? 'self' : selectedMember}
+                  onChange={(e) => handleMemberChange(e.target.value)}
+                  className="w-full md:w-64 p-2.5 rounded-lg border border-slate-300 bg-white text-slate-700 focus:ring-2 focus:ring-midnight focus:border-transparent outline-none"
+                >
+                  <option value="self">My Data</option>
+                  {teamMembers.length > 0 && (
+                    <optgroup label="Team Members">
+                      {teamMembers.map(member => (
+                        <option key={member.id} value={member.id}>
+                          {member.firstName} {member.lastName} ({member.role})
+                        </option>
+                      ))}
+                    </optgroup>
+                  )}
+                  {teamMembers.length === 0 && (
+                    <option disabled>No team members yet</option>
+                  )}
+                </select>
+              </div>
+            )}
+          </div>
         </div>
 
         {/* Show whose data is being viewed */}

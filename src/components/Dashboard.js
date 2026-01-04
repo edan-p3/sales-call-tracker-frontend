@@ -48,8 +48,11 @@ const Dashboard = ({ weekData, setWeekData, goals, onSave, reps }) => {
       <div className="bg-white rounded-xl shadow-sm border border-slate-100 overflow-hidden">
         <div className="p-4 bg-slate-50 border-b border-slate-100 flex justify-between items-center">
           <h2 className="text-lg font-semibold text-midnight">Daily Activity</h2>
-          <div className="text-sm text-slate-500 hidden sm:block">
-            Data auto-saves as you type
+          <div className="text-sm text-emerald-600 font-medium flex items-center gap-2">
+            <svg className="h-4 w-4" fill="currentColor" viewBox="0 0 20 20">
+              <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+            </svg>
+            Auto-saves as you type
           </div>
         </div>
         <div className="p-0 overflow-x-auto">
@@ -61,15 +64,9 @@ const Dashboard = ({ weekData, setWeekData, goals, onSave, reps }) => {
         </div>
       </div>
 
-      {/* Actions */}
+      {/* Export Button Only */}
       <div className="flex flex-col sm:flex-row justify-end items-center gap-4 pt-4 border-t border-slate-200">
          <ExportButton goals={goals} reps={reps} />
-         <button 
-           onClick={onSave}
-           className="w-full sm:w-auto px-8 py-3 bg-sunset hover:bg-[#e04f44] text-white font-semibold rounded-lg shadow-md hover:shadow-lg transition-all transform active:scale-95"
-         >
-           Save This Week's Data
-         </button>
       </div>
       
       <div className="text-center text-xs text-slate-500 mt-4 space-y-1">
@@ -84,8 +81,8 @@ Dashboard.propTypes = {
   weekData: PropTypes.object.isRequired,
   setWeekData: PropTypes.func.isRequired,
   goals: PropTypes.object.isRequired,
-  onSave: PropTypes.func.isRequired,
-  reps: PropTypes.array.isRequired
+  onSave: PropTypes.func, // Optional now since auto-save handles it
+  reps: PropTypes.array
 };
 
 export default Dashboard;
