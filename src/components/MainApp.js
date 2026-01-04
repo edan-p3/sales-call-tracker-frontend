@@ -246,21 +246,27 @@ function MainApp() {
           </div>
 
           {/* Team Member Selector (only for managers) */}
-          {isManager && teamMembers.length > 0 && (
+          {isManager && (
             <div className="w-full md:w-auto">
+              <label className="block text-xs text-slate-500 mb-1 font-medium">View Data For:</label>
               <select 
                 value={viewingMode === 'self' ? 'self' : selectedMember}
                 onChange={(e) => handleMemberChange(e.target.value)}
                 className="w-full md:w-64 p-2.5 rounded-lg border border-slate-300 bg-white text-slate-700 focus:ring-2 focus:ring-midnight focus:border-transparent outline-none"
               >
                 <option value="self">My Data</option>
-                <optgroup label="Team Members">
-                  {teamMembers.map(member => (
-                    <option key={member.id} value={member.id}>
-                      {member.firstName} {member.lastName} ({member.role})
-                    </option>
-                  ))}
-                </optgroup>
+                {teamMembers.length > 0 && (
+                  <optgroup label="Team Members">
+                    {teamMembers.map(member => (
+                      <option key={member.id} value={member.id}>
+                        {member.firstName} {member.lastName} ({member.role})
+                      </option>
+                    ))}
+                  </optgroup>
+                )}
+                {teamMembers.length === 0 && (
+                  <option disabled>No team members yet</option>
+                )}
               </select>
             </div>
           )}
