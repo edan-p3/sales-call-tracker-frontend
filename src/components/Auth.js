@@ -146,21 +146,28 @@ const Auth = () => {
                   <label htmlFor="role" className="block text-sm font-medium text-slate-700 mb-1">
                     I am a
                   </label>
-                  <select
-                    id="role"
-                    name="role"
-                    required={!isLogin}
-                    value={role}
-                    onChange={(e) => {
-                      setRole(e.target.value);
-                      setOrganizationId('');
-                      setOrganizationName('');
-                    }}
-                    className="appearance-none rounded-lg relative block w-full px-3 py-2 border border-slate-300 text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  >
-                    <option value="sales_rep">Sales Rep</option>
-                    <option value="manager">Manager</option>
-                  </select>
+                  <div className="relative">
+                    <select
+                      id="role"
+                      name="role"
+                      required={!isLogin}
+                      value={role}
+                      onChange={(e) => {
+                        setRole(e.target.value);
+                        setOrganizationId('');
+                        setOrganizationName('');
+                      }}
+                      className="appearance-none rounded-lg relative block w-full px-3 py-2 pr-10 border border-slate-300 text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white cursor-pointer"
+                    >
+                      <option value="sales_rep">Sales Rep</option>
+                      <option value="manager">Manager</option>
+                    </select>
+                    <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-slate-700">
+                      <svg className="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
+                        <path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"/>
+                      </svg>
+                    </div>
+                  </div>
                 </div>
 
                 {/* Organization Selection */}
@@ -190,23 +197,30 @@ const Auth = () => {
                     </label>
                     {organizations.length > 0 ? (
                       <>
-                        <select
-                          id="organization"
-                          name="organization"
-                          value={organizationId}
-                          onChange={(e) => {
-                            setOrganizationId(e.target.value);
-                            if (e.target.value) {
-                              setOrganizationName('');
-                            }
-                          }}
-                          className="appearance-none rounded-lg relative block w-full px-3 py-2 border border-slate-300 text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                        >
-                          <option value="">Select existing or create new</option>
-                          {organizations.map(org => (
-                            <option key={org.id} value={org.id}>{org.name}</option>
-                          ))}
-                        </select>
+                        <div className="relative">
+                          <select
+                            id="organization"
+                            name="organization"
+                            value={organizationId}
+                            onChange={(e) => {
+                              setOrganizationId(e.target.value);
+                              if (e.target.value) {
+                                setOrganizationName('');
+                              }
+                            }}
+                            className="appearance-none rounded-lg relative block w-full px-3 py-2 pr-10 border border-slate-300 text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white cursor-pointer"
+                          >
+                            <option value="">Select existing or create new</option>
+                            {organizations.map(org => (
+                              <option key={org.id} value={org.id}>{org.name}</option>
+                            ))}
+                          </select>
+                          <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-slate-700">
+                            <svg className="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
+                              <path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"/>
+                            </svg>
+                          </div>
+                        </div>
                         {!organizationId && (
                           <div className="mt-2">
                             <input
@@ -256,9 +270,23 @@ const Auth = () => {
             </div>
 
             <div>
-              <label htmlFor="password" className="block text-sm font-medium text-slate-700 mb-1">
-                Password
-              </label>
+              <div className="flex justify-between items-center mb-1">
+                <label htmlFor="password" className="block text-sm font-medium text-slate-700">
+                  Password
+                </label>
+                {isLogin && (
+                  <a 
+                    href="#forgot-password" 
+                    onClick={(e) => {
+                      e.preventDefault();
+                      alert('Password reset feature coming soon! Please contact your administrator for assistance.');
+                    }}
+                    className="text-xs text-blue-600 hover:text-blue-700 font-medium"
+                  >
+                    Forgot password?
+                  </a>
+                )}
+              </div>
               <input
                 id="password"
                 name="password"
