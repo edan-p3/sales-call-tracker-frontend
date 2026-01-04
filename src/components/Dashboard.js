@@ -72,8 +72,9 @@ const Dashboard = ({ weekData, setWeekData, goals, onSave, reps }) => {
          </button>
       </div>
       
-      <div className="text-center text-xs text-slate-400 mt-4">
-         Note: This is a browser-based tracker. To share data live with your team, a backend server is required.
+      <div className="text-center text-xs text-slate-500 mt-4 space-y-1">
+         <p className="font-semibold text-midnight">Powered by P3 Media</p>
+         <p>This live sales tracker is built for real-time reporting and collaboration. Metrics update dynamically and are designed to support team-wide visibility and performance tracking.</p>
       </div>
     </div>
   );
