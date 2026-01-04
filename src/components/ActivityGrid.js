@@ -48,7 +48,9 @@ const ActivityGrid = ({ data, onChange, goals }) => {
               <span className="text-xs text-slate-400 mt-1">Goal: {metric.goal}</span>
             </div>
             {days.map(day => {
-              const value = data[day] ? data[day][metric.key] : '';
+              const rawValue = data[day] ? data[day][metric.key] : '';
+              // Convert 0 to empty string for display, keep other values as-is
+              const value = rawValue === 0 || rawValue === '0' ? '' : rawValue;
               const isGoalMet = value && parseInt(value) >= metric.goal;
               
               return (
