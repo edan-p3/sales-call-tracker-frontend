@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
+import api from '../utils/api';
 
 const Auth = () => {
   const [isLogin, setIsLogin] = useState(true);
@@ -8,11 +9,32 @@ const Auth = () => {
   const [password, setPassword] = useState('');
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
+  const [role, setRole] = useState('sales_rep');
+  const [organizationId, setOrganizationId] = useState('');
+  const [organizationName, setOrganizationName] = useState('');
+  const [organizations, setOrganizations] = useState([]);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   
   const { login, register } = useAuth();
   const navigate = useNavigate();
+
+  // Load organizations for joining (only shown for sales_rep)
+  useEffect(() => {
+    if (!isLogin) {
+      loadOrganizations();
+    }
+  }, [isLogin]);
+
+  const loadOrganizations = async () => {
+    try {
+      const response = await api.get('/team/organizations');
+      setOrganizations(response.data.data || []);
+    } catch (error) {
+      // If it fails, user can still create a new org
+      console.error('Failed to load organizations:', error);
+    }
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -29,7 +51,29 @@ const Auth = () => {
           setLoading(false);
           return;
         }
-        result = await register(email, password, firstName, lastName);
+
+        // Validate organization selection
+        if (role === 'manager' && !organizationName) {
+          setError('Please enter your organization name');
+          setLoading(false);
+          return;
+        }
+
+        if (role === 'sales_rep' && !organizationId && !organizationName) {
+          setError('Please select or create an organization');
+          setLoading(false);
+          return;
+        }
+
+        result = await register(
+          email, 
+          password, 
+          firstName, 
+          lastName, 
+          role,
+          organizationName || undefined,
+          organizationId || undefined
+        );
       }
 
       if (result.success) {
@@ -96,6 +140,101 @@ const Auth = () => {
                     placeholder="Doe"
                   />
                 </div>
+
+                {/* Role Selection */}
+                <div>
+                  <label htmlFor="role" className="block text-sm font-medium text-slate-700 mb-1">
+                    I am a
+                  </label>
+                  <select
+                    id="role"
+                    name="role"
+                    required={!isLogin}
+                    value={role}
+                    onChange={(e) => {
+                      setRole(e.target.value);
+                      setOrganizationId('');
+                      setOrganizationName('');
+                    }}
+                    className="appearance-none rounded-lg relative block w-full px-3 py-2 border border-slate-300 text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  >
+                    <option value="sales_rep">Sales Rep</option>
+                    <option value="manager">Manager</option>
+                  </select>
+                </div>
+
+                {/* Organization Selection */}
+                {role === 'manager' ? (
+                  <div>
+                    <label htmlFor="organizationName" className="block text-sm font-medium text-slate-700 mb-1">
+                      Organization Name
+                    </label>
+                    <input
+                      id="organizationName"
+                      name="organizationName"
+                      type="text"
+                      required={!isLogin && role === 'manager'}
+                      value={organizationName}
+                      onChange={(e) => setOrganizationName(e.target.value)}
+                      className="appearance-none rounded-lg relative block w-full px-3 py-2 border border-slate-300 placeholder-slate-400 text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      placeholder="Acme Corp"
+                    />
+                    <p className="mt-1 text-xs text-slate-500">
+                      You'll create a new organization
+                    </p>
+                  </div>
+                ) : (
+                  <div>
+                    <label htmlFor="organization" className="block text-sm font-medium text-slate-700 mb-1">
+                      Organization
+                    </label>
+                    {organizations.length > 0 ? (
+                      <>
+                        <select
+                          id="organization"
+                          name="organization"
+                          value={organizationId}
+                          onChange={(e) => {
+                            setOrganizationId(e.target.value);
+                            if (e.target.value) {
+                              setOrganizationName('');
+                            }
+                          }}
+                          className="appearance-none rounded-lg relative block w-full px-3 py-2 border border-slate-300 text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        >
+                          <option value="">Select existing or create new</option>
+                          {organizations.map(org => (
+                            <option key={org.id} value={org.id}>{org.name}</option>
+                          ))}
+                        </select>
+                        {!organizationId && (
+                          <div className="mt-2">
+                            <input
+                              type="text"
+                              placeholder="Or create new organization"
+                              value={organizationName}
+                              onChange={(e) => setOrganizationName(e.target.value)}
+                              className="appearance-none rounded-lg relative block w-full px-3 py-2 border border-slate-300 placeholder-slate-400 text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            />
+                          </div>
+                        )}
+                      </>
+                    ) : (
+                      <input
+                        id="organizationName"
+                        type="text"
+                        required={!isLogin && role === 'sales_rep'}
+                        value={organizationName}
+                        onChange={(e) => setOrganizationName(e.target.value)}
+                        placeholder="Your organization name"
+                        className="appearance-none rounded-lg relative block w-full px-3 py-2 border border-slate-300 placeholder-slate-400 text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      />
+                    )}
+                    <p className="mt-1 text-xs text-slate-500">
+                      Join your team's organization
+                    </p>
+                  </div>
+                )}
               </>
             )}
 

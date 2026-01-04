@@ -4,6 +4,7 @@ import Dashboard from './Dashboard';
 import WeekSelector from './WeekSelector';
 import Settings from './Settings';
 import { getGoals, saveGoals, getWeekData, saveWeekData, getLogo, saveLogo } from '../utils/storageAPI';
+import { getTeamMembers, getTeamMemberGoals, getTeamMemberActivity, saveTeamMemberActivity } from '../utils/teamAPI';
 import { useAuth } from '../context/AuthContext';
 
 function MainApp() {
@@ -16,12 +17,45 @@ function MainApp() {
   const [logo, setLogo] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // Load initial data
+  // Team management (for managers)
+  const [teamMembers, setTeamMembers] = useState([]);
+  const [selectedMember, setSelectedMember] = useState(null); // null = viewing own data
+  const [viewingMode, setViewingMode] = useState('self'); // 'self' or 'team'
+
+  const isManager = user?.role === 'manager' || user?.role === 'admin';
+  const currentViewUserId = selectedMember || user?.id;
+
+  // Load team members (for managers)
+  useEffect(() => {
+    const loadTeamMembers = async () => {
+      if (isManager) {
+        try {
+          const members = await getTeamMembers();
+          setTeamMembers(members);
+        } catch (error) {
+          console.error('Error loading team members:', error);
+        }
+      }
+    };
+
+    loadTeamMembers();
+  }, [isManager]);
+
+  // Load initial data (goals and logo)
   useEffect(() => {
     const loadInitialData = async () => {
       setLoading(true);
       try {
-        const loadedGoals = await getGoals();
+        let loadedGoals;
+        
+        if (viewingMode === 'team' && selectedMember) {
+          // Load team member's goals
+          loadedGoals = await getTeamMemberGoals(selectedMember);
+        } else {
+          // Load own goals
+          loadedGoals = await getGoals();
+        }
+        
         const loadedLogo = getLogo();
         setGoals(loadedGoals);
         setLogo(loadedLogo);
@@ -34,16 +68,25 @@ function MainApp() {
     };
 
     loadInitialData();
-  }, []);
+  }, [viewingMode, selectedMember]);
 
-  // Load week data when week changes
+  // Load week data when week or selected member changes
   useEffect(() => {
     const loadWeekData = async () => {
       if (!user) return;
       
       const weekStartStr = format(startOfWeek(currentWeek, { weekStartsOn: 1 }), 'yyyy-MM-dd');
+      
       try {
-        const data = await getWeekData(weekStartStr);
+        let data;
+        
+        if (viewingMode === 'team' && selectedMember) {
+          // Load team member's data
+          data = await getTeamMemberActivity(selectedMember, weekStartStr);
+        } else {
+          // Load own data
+          data = await getWeekData(weekStartStr);
+        }
         
         if (data) {
           setWeekData(data);
@@ -65,13 +108,22 @@ function MainApp() {
     };
 
     loadWeekData();
-  }, [currentWeek, user]);
+  }, [currentWeek, user, viewingMode, selectedMember]);
 
   const handleSaveData = useCallback(async () => {
     if (weekData) {
       const weekStartStr = format(startOfWeek(currentWeek, { weekStartsOn: 1 }), 'yyyy-MM-dd');
       try {
-        const success = await saveWeekData(weekStartStr, weekData);
+        let success;
+        
+        if (viewingMode === 'team' && selectedMember) {
+          // Save team member's data (manager editing)
+          success = await saveTeamMemberActivity(selectedMember, weekStartStr, weekData);
+        } else {
+          // Save own data
+          success = await saveWeekData(weekStartStr, weekData);
+        }
+        
         if (!success) {
           showNotification('Failed to save data.', 'error');
         }
@@ -80,7 +132,7 @@ function MainApp() {
         showNotification('Failed to save data.', 'error');
       }
     }
-  }, [weekData, currentWeek]);
+  }, [weekData, currentWeek, viewingMode, selectedMember]);
 
   // Auto-save effect
   useEffect(() => {
@@ -124,6 +176,22 @@ function MainApp() {
     logout();
   };
 
+  const handleMemberChange = (memberId) => {
+    if (memberId === 'self') {
+      setViewingMode('self');
+      setSelectedMember(null);
+    } else {
+      setViewingMode('team');
+      setSelectedMember(memberId);
+    }
+  };
+
+  const getSelectedMemberName = () => {
+    if (viewingMode === 'self') return 'My Data';
+    const member = teamMembers.find(m => m.id === selectedMember);
+    return member ? `${member.firstName} ${member.lastName}` : 'Team Member';
+  };
+
   if (loading || !goals) {
     return (
       <div className="flex items-center justify-center h-screen bg-slate-50">
@@ -147,6 +215,7 @@ function MainApp() {
           <div className="flex items-center gap-4">
             <span className="text-sm text-slate-200">
               {user?.firstName} {user?.lastName}
+              {isManager && <span className="ml-2 text-xs bg-white/20 px-2 py-1 rounded">Manager</span>}
             </span>
             <button 
               onClick={() => setIsSettingsOpen(true)}
@@ -170,12 +239,44 @@ function MainApp() {
 
       {/* Main Content */}
       <main className="max-w-7xl mx-auto p-4 md:p-6 space-y-6">
-        {/* Controls: Week Selector */}
+        {/* Controls: Week Selector & Team Member Selector (for managers) */}
         <div className="flex flex-col md:flex-row justify-between items-center gap-4 bg-white p-4 rounded-xl shadow-sm border border-slate-100">
           <div className="w-full md:w-auto">
             <WeekSelector currentWeek={currentWeek} onChange={setCurrentWeek} />
           </div>
+
+          {/* Team Member Selector (only for managers) */}
+          {isManager && teamMembers.length > 0 && (
+            <div className="w-full md:w-auto">
+              <select 
+                value={viewingMode === 'self' ? 'self' : selectedMember}
+                onChange={(e) => handleMemberChange(e.target.value)}
+                className="w-full md:w-64 p-2.5 rounded-lg border border-slate-300 bg-white text-slate-700 focus:ring-2 focus:ring-midnight focus:border-transparent outline-none"
+              >
+                <option value="self">My Data</option>
+                <optgroup label="Team Members">
+                  {teamMembers.map(member => (
+                    <option key={member.id} value={member.id}>
+                      {member.firstName} {member.lastName} ({member.role})
+                    </option>
+                  ))}
+                </optgroup>
+              </select>
+            </div>
+          )}
         </div>
+
+        {/* Show whose data is being viewed */}
+        {viewingMode === 'team' && (
+          <div className="bg-blue-50 border border-blue-200 text-blue-800 px-4 py-3 rounded-lg flex items-center justify-between">
+            <span className="font-medium">
+              📊 Viewing data for: {getSelectedMemberName()}
+            </span>
+            <span className="text-sm">
+              You can edit and save their data
+            </span>
+          </div>
+        )}
 
         {weekData ? (
           <Dashboard 
@@ -214,4 +315,3 @@ function MainApp() {
 }
 
 export default MainApp;
-
