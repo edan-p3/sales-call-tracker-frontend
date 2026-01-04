@@ -53,29 +53,31 @@ const Settings = ({ isOpen, onClose, goals, onUpdateGoals, onUpdateLogo, current
         </div>
 
         <div className="p-6 space-y-8">
-            {/* Logo Section */}
-          <section>
-            <h3 className="text-lg font-semibold text-midnight mb-4 flex items-center gap-2">
-              <span>🖼️</span> Company Logo
-            </h3>
-            <div className="flex items-center gap-4">
-              {localLogo && (
-                <img src={localLogo} alt="Preview" className="h-16 w-auto object-contain border rounded p-1" />
-              )}
-              <input 
-                type="file" 
-                accept="image/*"
-                onChange={handleLogoUpload}
-                className="block w-full text-sm text-slate-500
-                  file:mr-4 file:py-2 file:px-4
-                  file:rounded-full file:border-0
-                  file:text-sm file:font-semibold
-                  file:bg-violet-50 file:text-midnight
-                  hover:file:bg-violet-100"
-              />
-            </div>
-            <p className="text-xs text-slate-400 mt-2">Upload your company logo to display in the header.</p>
-          </section>
+            {/* Logo Section - Managers Only */}
+          {isManager && (
+            <section>
+              <h3 className="text-lg font-semibold text-midnight mb-4 flex items-center gap-2">
+                <span>🖼️</span> Company Logo
+              </h3>
+              <div className="flex items-center gap-4">
+                {localLogo && (
+                  <img src={localLogo} alt="Preview" className="h-16 w-auto object-contain border rounded p-1" />
+                )}
+                <input 
+                  type="file" 
+                  accept="image/*"
+                  onChange={handleLogoUpload}
+                  className="block w-full text-sm text-slate-500
+                    file:mr-4 file:py-2 file:px-4
+                    file:rounded-full file:border-0
+                    file:text-sm file:font-semibold
+                    file:bg-violet-50 file:text-midnight
+                    hover:file:bg-violet-100"
+                />
+              </div>
+              <p className="text-xs text-slate-400 mt-2">Upload your company logo to display in the header.</p>
+            </section>
+          )}
 
           {/* Goals Section */}
           <section>
