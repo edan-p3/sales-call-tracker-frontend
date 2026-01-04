@@ -92,14 +92,23 @@ const Auth = () => {
   return (
     <div className="min-h-screen flex items-center justify-center bg-slate-50 py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-md w-full space-y-8">
-        <div>
-          <h2 className="mt-6 text-center text-3xl font-extrabold text-slate-900">
-            {isLogin ? 'Sign in to your account' : 'Create new account'}
+        {/* P3 Media Branding */}
+        <div className="text-center">
+          <h1 className="text-5xl font-extrabold text-midnight tracking-tight mb-2">
+            P3 MEDIA
+          </h1>
+          <h2 className="text-2xl font-semibold text-slate-800 mb-2">
+            Sales Call Tracker
           </h2>
-          <p className="mt-2 text-center text-sm text-slate-600">
-            Sales Activity Tracker
+          <p className="text-sm text-slate-500 font-medium">
+            Track daily activity & crush your goals
           </p>
         </div>
+
+        <div className="mt-8">
+          <h3 className="text-center text-2xl font-bold text-slate-900 mb-6">
+            {isLogin ? 'Sign in to your account' : 'Create new account'}
+          </h3>
         
         <form className="mt-8 space-y-6 bg-white p-8 rounded-xl shadow-md" onSubmit={handleSubmit}>
           {error && (
@@ -330,6 +339,7 @@ const Auth = () => {
             </button>
           </div>
         </form>
+        </div>
       </div>
     </div>
   );
