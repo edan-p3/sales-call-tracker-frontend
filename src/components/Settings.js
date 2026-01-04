@@ -1,11 +1,9 @@
 import React, { useState } from 'react';
 import PropTypes from 'prop-types';
-import { defaultGoals } from '../utils/storage';
+import { defaultGoals } from '../utils/storageAPI';
 
-const Settings = ({ isOpen, onClose, goals, onUpdateGoals, reps, onUpdateReps, onUpdateLogo, currentLogo }) => {
+const Settings = ({ isOpen, onClose, goals, onUpdateGoals, onUpdateLogo, currentLogo }) => {
   const [localGoals, setLocalGoals] = useState(goals || defaultGoals);
-  const [localReps, setLocalReps] = useState(reps || []);
-  const [newRepName, setNewRepName] = useState('');
   const [localLogo, setLocalLogo] = useState(currentLogo || '');
 
   if (!isOpen) return null;
@@ -23,17 +21,6 @@ const Settings = ({ isOpen, onClose, goals, onUpdateGoals, reps, onUpdateReps, o
     setLocalGoals(newGoalsState);
   };
 
-  const addRep = () => {
-    if (newRepName.trim() && !localReps.includes(newRepName.trim())) {
-      setLocalReps([...localReps, newRepName.trim()]);
-      setNewRepName('');
-    }
-  };
-
-  const removeRep = (repToRemove) => {
-    setLocalReps(localReps.filter(rep => rep !== repToRemove));
-  };
-
   const handleLogoUpload = (e) => {
     const file = e.target.files[0];
     if (file) {
@@ -47,7 +34,6 @@ const Settings = ({ isOpen, onClose, goals, onUpdateGoals, reps, onUpdateReps, o
 
   const handleSave = () => {
     onUpdateGoals(localGoals);
-    onUpdateReps(localReps);
     onUpdateLogo(localLogo);
     onClose();
   };
@@ -127,51 +113,6 @@ const Settings = ({ isOpen, onClose, goals, onUpdateGoals, reps, onUpdateReps, o
               ))}
             </div>
           </section>
-
-          {/* Reps Section */}
-          <section>
-            <h3 className="text-lg font-semibold text-midnight mb-4 flex items-center gap-2">
-              <span>👥</span> Team Members
-            </h3>
-            <div className="flex gap-2 mb-4">
-              <input
-                type="text"
-                placeholder="Enter rep name"
-                value={newRepName}
-                onChange={(e) => setNewRepName(e.target.value)}
-                onKeyPress={(e) => e.key === 'Enter' && addRep()}
-                className="flex-1 p-3 border border-slate-200 rounded-lg focus:ring-2 focus:ring-midnight/20 focus:border-midnight outline-none"
-              />
-              <button 
-                onClick={addRep}
-                disabled={!newRepName.trim()}
-                className="px-6 py-3 bg-midnight text-white rounded-lg hover:bg-opacity-90 disabled:opacity-50 disabled:cursor-not-allowed font-medium"
-              >
-                Add
-              </button>
-            </div>
-            
-            <div className="bg-slate-50 rounded-lg border border-slate-100 divide-y divide-slate-100 max-h-48 overflow-y-auto">
-              {localReps.length === 0 ? (
-                <div className="p-4 text-center text-slate-400 text-sm">No reps added yet. Add yourself!</div>
-              ) : (
-                localReps.map(rep => (
-                  <div key={rep} className="p-3 flex justify-between items-center hover:bg-white transition-colors">
-                    <span className="font-medium text-slate-700">{rep}</span>
-                    <button 
-                      onClick={() => removeRep(rep)}
-                      className="text-red-400 hover:text-red-600 p-1 rounded-full hover:bg-red-50 transition-colors"
-                      title="Remove Rep"
-                    >
-                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                        <path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
-                      </svg>
-                    </button>
-                  </div>
-                ))
-              )}
-            </div>
-          </section>
         </div>
 
         <div className="p-6 border-t border-slate-100 flex justify-end gap-3 bg-slate-50 rounded-b-2xl sticky bottom-0">
@@ -198,8 +139,6 @@ Settings.propTypes = {
   onClose: PropTypes.func.isRequired,
   goals: PropTypes.object,
   onUpdateGoals: PropTypes.func.isRequired,
-  reps: PropTypes.array,
-  onUpdateReps: PropTypes.func.isRequired,
   onUpdateLogo: PropTypes.func.isRequired,
   currentLogo: PropTypes.string
 };
