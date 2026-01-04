@@ -2,11 +2,13 @@ import React, { useState } from 'react';
 import PropTypes from 'prop-types';
 import { defaultGoals } from '../utils/storageAPI';
 
-const Settings = ({ isOpen, onClose, goals, onUpdateGoals, onUpdateLogo, currentLogo }) => {
+const Settings = ({ isOpen, onClose, goals, onUpdateGoals, onUpdateLogo, currentLogo, userRole }) => {
   const [localGoals, setLocalGoals] = useState(goals || defaultGoals);
   const [localLogo, setLocalLogo] = useState(currentLogo || '');
 
   if (!isOpen) return null;
+  
+  const isManager = userRole === 'manager' || userRole === 'admin';
 
   const handleGoalChange = (key, value) => {
     const val = parseInt(value) || 0;
@@ -79,7 +81,13 @@ const Settings = ({ isOpen, onClose, goals, onUpdateGoals, onUpdateLogo, current
           <section>
             <h3 className="text-lg font-semibold text-midnight mb-4 flex items-center gap-2">
               <span>🎯</span> Daily Goals
+              {!isManager && <span className="text-xs text-slate-500 font-normal ml-2">(Set by Manager)</span>}
             </h3>
+            {!isManager && (
+              <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg text-sm text-blue-800">
+                <p>📊 These goals are set by your manager and apply to your entire team.</p>
+              </div>
+            )}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {['calls', 'emails', 'contacts', 'responses', 'meetings'].map(metric => (
                 <div key={metric} className="flex flex-col">
@@ -87,8 +95,13 @@ const Settings = ({ isOpen, onClose, goals, onUpdateGoals, onUpdateLogo, current
                   <input
                     type="number"
                     value={localGoals[`${metric}PerDay`]}
-                    onChange={(e) => handleGoalChange(`${metric}PerDay`, e.target.value)}
-                    className="p-3 border border-slate-200 rounded-lg focus:ring-2 focus:ring-midnight/20 focus:border-midnight outline-none"
+                    onChange={(e) => isManager && handleGoalChange(`${metric}PerDay`, e.target.value)}
+                    disabled={!isManager}
+                    className={`p-3 border border-slate-200 rounded-lg ${
+                      isManager 
+                        ? 'focus:ring-2 focus:ring-midnight/20 focus:border-midnight outline-none' 
+                        : 'bg-slate-100 cursor-not-allowed text-slate-600'
+                    }`}
                   />
                 </div>
               ))}
@@ -106,8 +119,9 @@ const Settings = ({ isOpen, onClose, goals, onUpdateGoals, onUpdateLogo, current
                   <input
                     type="number"
                     value={localGoals[`${metric}PerWeek`]}
-                    onChange={(e) => handleGoalChange(`${metric}PerWeek`, e.target.value)}
-                    className="p-3 border border-slate-200 rounded-lg bg-slate-50 text-slate-500 cursor-not-allowed" // Make read-only or editable? Prompt says "Input for weekly", maybe allow override.
+                    onChange={(e) => isManager && handleGoalChange(`${metric}PerWeek`, e.target.value)}
+                    disabled={!isManager}
+                    className="p-3 border border-slate-200 rounded-lg bg-slate-100 text-slate-600 cursor-not-allowed"
                   />
                 </div>
               ))}
@@ -122,12 +136,14 @@ const Settings = ({ isOpen, onClose, goals, onUpdateGoals, onUpdateLogo, current
           >
             Cancel
           </button>
-          <button 
-            onClick={handleSave}
-            className="px-8 py-2.5 bg-sunset hover:bg-[#e04f44] text-white font-semibold rounded-lg shadow-md hover:shadow-lg transition-all transform active:scale-95"
-          >
-            Save Goals
-          </button>
+          {isManager && (
+            <button 
+              onClick={handleSave}
+              className="px-8 py-2.5 bg-sunset hover:bg-[#e04f44] text-white font-semibold rounded-lg shadow-md hover:shadow-lg transition-all transform active:scale-95"
+            >
+              Save Goals
+            </button>
+          )}
         </div>
       </div>
     </div>
@@ -140,7 +156,8 @@ Settings.propTypes = {
   goals: PropTypes.object,
   onUpdateGoals: PropTypes.func.isRequired,
   onUpdateLogo: PropTypes.func.isRequired,
-  currentLogo: PropTypes.string
+  currentLogo: PropTypes.string,
+  userRole: PropTypes.string
 };
 
 export default Settings;

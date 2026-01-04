@@ -301,6 +301,7 @@ function MainApp() {
           onUpdateGoals={handleUpdateGoals}
           onUpdateLogo={handleUpdateLogo}
           currentLogo={logo}
+          userRole={user?.role}
         />
       )}
 
