@@ -57,7 +57,8 @@ const ExportButton = ({ goals }) => {
         <button 
           onClick={handleExcelExport}
           disabled={exporting}
-          className="flex items-center justify-center gap-2 px-8 py-3 bg-emerald-600 hover:bg-emerald-700 disabled:bg-slate-400 disabled:cursor-not-allowed text-white font-semibold rounded-lg transition-all shadow-md hover:shadow-lg transform hover:scale-105 active:scale-95"
+          style={{ backgroundColor: exporting ? '#94a3b8' : '#10b981', color: '#ffffff' }}
+          className="flex items-center justify-center gap-2 px-8 py-3 font-semibold rounded-lg transition-all shadow-md hover:shadow-lg transform hover:scale-105 active:scale-95 disabled:cursor-not-allowed border-2 border-emerald-700"
         >
           {exporting ? (
             <>
