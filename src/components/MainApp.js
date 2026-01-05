@@ -213,8 +213,17 @@ function MainApp() {
       <nav className="bg-midnight text-white p-4 shadow-md">
         <div className="max-w-7xl mx-auto flex justify-between items-center">
           <div className="flex items-center gap-3">
-            {logo && <img src={logo} alt="Company Logo" className="h-10 w-auto rounded bg-white p-1" />}
-            <h1 className="text-xl font-bold tracking-tight">Sales Activity Tracker</h1>
+            {/* P3 MEDIA Logo - Always visible */}
+            <div className="flex items-center gap-3">
+              {logo ? (
+                <img src={logo} alt="Company Logo" className="h-10 w-auto rounded bg-white p-1" />
+              ) : (
+                <div className="bg-white text-midnight px-3 py-1 rounded font-black text-lg tracking-tighter">
+                  P3 MEDIA
+                </div>
+              )}
+              <h1 className="text-xl font-bold tracking-tight">Sales Activity Tracker</h1>
+            </div>
           </div>
           <div className="flex items-center gap-4">
             <span className="text-sm text-slate-200">
