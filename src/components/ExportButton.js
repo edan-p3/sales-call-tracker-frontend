@@ -39,10 +39,10 @@ const ExportButton = ({ goals }) => {
 
   return (
     <>
-      <div className="flex gap-2">
+      <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
          <button 
           onClick={handleGoogleSheetsClick}
-          className="flex items-center gap-2 px-6 py-3 bg-white text-slate-700 font-medium rounded-lg border border-slate-200 hover:bg-slate-50 hover:border-slate-300 transition-all shadow-sm"
+          className="flex items-center justify-center gap-2 px-6 py-3 bg-white text-slate-700 font-medium rounded-lg border-2 border-slate-300 hover:bg-slate-50 hover:border-emerald-400 transition-all shadow-sm"
         >
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
             <path d="M14.5 2H6C4.89543 2 4 2.89543 4 4V20C4 21.1046 4.89543 22 6 22H18C19.1046 22 20 21.1046 20 20V7.5L14.5 2Z" stroke="#22c55e" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
@@ -51,13 +51,13 @@ const ExportButton = ({ goals }) => {
             <path d="M8 17H16" stroke="#22c55e" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
             <path d="M10 9H8" stroke="#22c55e" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
           </svg>
-          Google Sheets
+          <span className="font-semibold">Google Sheets</span>
         </button>
 
         <button 
           onClick={handleExcelExport}
           disabled={exporting}
-          className="flex items-center gap-2 px-6 py-3 bg-emerald-600 hover:bg-emerald-700 disabled:bg-slate-300 text-white font-medium rounded-lg transition-all shadow-sm"
+          className="flex items-center justify-center gap-2 px-8 py-3 bg-emerald-600 hover:bg-emerald-700 disabled:bg-slate-400 disabled:cursor-not-allowed text-white font-semibold rounded-lg transition-all shadow-md hover:shadow-lg transform hover:scale-105 active:scale-95"
         >
           {exporting ? (
             <>
@@ -65,7 +65,7 @@ const ExportButton = ({ goals }) => {
                 <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                 <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
               </svg>
-              Exporting...
+              <span>Exporting...</span>
             </>
           ) : (
             <>
@@ -76,7 +76,7 @@ const ExportButton = ({ goals }) => {
                 <line x1="16" y1="17" x2="8" y2="17"></line>
                 <polyline points="10 9 9 9 8 9"></polyline>
               </svg>
-              Export to Excel
+              <span>Export to Excel</span>
             </>
           )}
         </button>
