@@ -1,25 +1,39 @@
 import React, { useState } from 'react';
 import PropTypes from 'prop-types';
 import { exportToExcel } from '../utils/excelExport';
-import { getAllWeekData } from '../utils/storage';
+import { getAllWeekData } from '../utils/storageAPI';
+import { useAuth } from '../context/AuthContext';
 
-const ExportButton = ({ goals, reps }) => {
+const ExportButton = ({ goals }) => {
+  const { user } = useAuth();
   const [showSheetsModal, setShowSheetsModal] = useState(false);
+  const [exporting, setExporting] = useState(false);
 
-  const handleExcelExport = () => {
-    const allData = getAllWeekData();
-    const success = exportToExcel(allData, goals, reps);
-    if (success) {
-      alert('Export successful!'); 
-    } else {
+  const handleExcelExport = async () => {
+    try {
+      setExporting(true);
+      const allData = await getAllWeekData();
+      
+      if (!allData || allData.length === 0) {
+        alert('No data to export. Enter some activity data first!');
+        return;
+      }
+
+      const success = exportToExcel(allData, goals, user);
+      if (success) {
+        alert('Export successful! Check your downloads folder.'); 
+      } else {
+        alert('Export failed. Check console for details.');
+      }
+    } catch (error) {
+      console.error('Export error:', error);
       alert('Export failed. Check console for details.');
+    } finally {
+      setExporting(false);
     }
   };
 
   const handleGoogleSheetsClick = () => {
-    // Since we don't have a backend or Sheets API setup, we'll guide the user
-    // to export CSV or explain the limitation as requested.
-    // For now, let's open a modal or alert explaining the process.
     setShowSheetsModal(true);
   };
 
@@ -42,16 +56,29 @@ const ExportButton = ({ goals, reps }) => {
 
         <button 
           onClick={handleExcelExport}
-          className="flex items-center gap-2 px-6 py-3 bg-white text-slate-700 font-medium rounded-lg border border-slate-200 hover:bg-slate-50 hover:border-slate-300 transition-all shadow-sm"
+          disabled={exporting}
+          className="flex items-center gap-2 px-6 py-3 bg-emerald-600 hover:bg-emerald-700 disabled:bg-slate-300 text-white font-medium rounded-lg transition-all shadow-sm"
         >
-          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-emerald">
-            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-            <polyline points="14 2 14 8 20 8"></polyline>
-            <line x1="16" y1="13" x2="8" y2="13"></line>
-            <line x1="16" y1="17" x2="8" y2="17"></line>
-            <polyline points="10 9 9 9 8 9"></polyline>
-          </svg>
-          Export to Excel
+          {exporting ? (
+            <>
+              <svg className="animate-spin h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              </svg>
+              Exporting...
+            </>
+          ) : (
+            <>
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                <polyline points="14 2 14 8 20 8"></polyline>
+                <line x1="16" y1="13" x2="8" y2="13"></line>
+                <line x1="16" y1="17" x2="8" y2="17"></line>
+                <polyline points="10 9 9 9 8 9"></polyline>
+              </svg>
+              Export to Excel
+            </>
+          )}
         </button>
       </div>
 
@@ -63,7 +90,7 @@ const ExportButton = ({ goals, reps }) => {
               Direct syncing to Google Sheets requires a backend server or complex API configuration. 
             </p>
             <p className="text-slate-600 mb-6">
-              <strong>Workaround:</strong> You can click "Export to Excel" and then import that file directly into Google Sheets (File > Import).
+              <strong>Workaround:</strong> You can click "Export to Excel" and then import that file directly into Google Sheets (File &gt; Import).
             </p>
             <div className="flex justify-end">
               <button 
@@ -81,8 +108,7 @@ const ExportButton = ({ goals, reps }) => {
 };
 
 ExportButton.propTypes = {
-  goals: PropTypes.object.isRequired,
-  reps: PropTypes.array.isRequired
+  goals: PropTypes.object.isRequired
 };
 
 export default ExportButton;

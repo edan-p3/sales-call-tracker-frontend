@@ -66,7 +66,7 @@ const Dashboard = ({ weekData, setWeekData, goals, onSave, reps }) => {
 
       {/* Export Button Only */}
       <div className="flex flex-col sm:flex-row justify-end items-center gap-4 pt-4 border-t border-slate-200">
-         <ExportButton goals={goals} reps={reps} />
+         <ExportButton goals={goals} />
       </div>
       
       <div className="text-center text-xs text-slate-500 mt-4 space-y-1">
